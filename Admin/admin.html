@@ -1,0 +1,170 @@
+<html>
+<head>
+<title>Admin Panel</title>
+<script src="https://www.gstatic.com/firebasejs/5.8.2/firebase.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyAq1DBBz6i4irkVOQOK1nsNKDOSLYbytR0",
+    authDomain: "fir-web-464fc.firebaseapp.com",
+    databaseURL: "https://fir-web-464fc.firebaseio.com",
+    projectId: "fir-web-464fc",
+    storageBucket: "fir-web-464fc.appspot.com",
+    messagingSenderId: "321941519487"
+  };
+  firebase.initializeApp(config);
+</script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+
+</head>
+
+<body>
+  <table class="table table-striped" style="width: 30%">
+      <tr>
+          <td>News ID:</td>
+          <td><input type="text" name="id" id="news_id"/></td>
+      </tr>
+      <tr>
+          <td>Title:</td>
+          <td><input type="text" name="title" id="news_title"/></td>
+      </tr>
+      <tr>
+        <td>Description:</td>
+        <td><input type="text" name="description" id="news_description"/></td>
+      </tr>
+      <tr>
+        <td>Author:</td>
+        <td><input type="text" name="author" id="news_author"/></td>
+      </tr>
+    
+      <tr>
+          <td colspan="2">
+              <input type="button" value="Save" onclick="SaveNews();"/>
+              <input type="button" value="Update" onclick="UpdateNews();"/>
+              <input type="button" value="Delete" onclick="DeleteNews();"/>
+          </td>
+      </tr>
+  </table>
+
+  <table id="tbl_news_list" class="table table-striped">
+      <tr>
+          <td>News ID</td>
+          <td>News Title</td>
+          <td>News Description</td>
+          <td>News Author</td>
+          <td>Action</td>
+      </tr>
+
+  </table>
+
+  <script>
+      var tblNews = document.getElementById('tbl_news_list');
+      var databaseRef = firebase.database().ref('news/');
+      var rowIndex = 1;
+      
+      databaseRef.once('value', function(snapshot) {
+        snapshot.forEach(function(childSnapshot) {
+            var childKey = childSnapshot.key;
+            var childData = childSnapshot.val();
+
+            var row = tblNews.insertRow(rowIndex);
+            var CellID = row.insertCell(0);
+            var CellTitle = row.insertCell(1);
+            var CellDescription = row.insertCell(2);
+            var CellAuthor = row.insertCell(3);
+            var CellAction = row.insertCell(4);
+            
+
+            CellID.appendChild(document.createTextNode(childKey));
+            CellTitle.appendChild(document.createTextNode(childData.news_title));
+            CellDescription.appendChild(document.createTextNode(childData.news_description));
+            CellAuthor.appendChild(document.createTextNode(childData.news_author));
+            var btn = document.createElement("BUTTON");
+            var t = document.createTextNode("Delete");
+            btn.appendChild(t);
+            
+            CellAction.appendChild(btn);
+            btn.addEventListener('click',function ()
+            {
+ 
+                firebase.database().ref().child('/news/' + childKey).remove();
+                alert("News Deleted.!");           
+                ReloadPage();
+            //validation code to see State field is mandatory.  
+            }  ); 
+            
+            rowIndex = rowIndex + 1;
+        // ...
+        });
+        });
+
+      function SaveNews(){
+            var news_id = document.getElementById('news_id').value;
+            var news_title = document.getElementById('news_title').value;
+            var news_description = document.getElementById('news_description').value;
+            var news_author = document.getElementById('news_author').value;
+
+            var newsID = firebase.database().ref().child('news').push().key;
+
+            var data = {
+                news_id: newsID,
+                news_title: news_title,
+                news_description: news_description,
+                news_author: news_author
+            }
+
+            var updates = {};
+            updates['/news/' + newsID] = data;
+            firebase.database().ref().update(updates);
+
+            alert("News Added.!");
+            ReloadPage();
+      }
+
+      function UpdateNews(){
+            var news_id = document.getElementById('news_id').value;
+            var news_title = document.getElementById('news_title').value;
+            var news_description = document.getElementById('news_description').value;
+            var news_author = document.getElementById('news_author').value;
+
+            var data = {
+                news_id: news_id,
+                news_title: news_title,
+                news_description: news_description,
+                news_author: news_author
+            }
+        
+            var updates = {};
+            updates['/news/' + news_id] = data;
+            firebase.database().ref().update(updates);
+
+            alert("News Updated.!");
+            ReloadPage();
+      }
+
+      function DeleteNews(){
+            var news_id = document.getElementById('news_id').value;
+            //alert(news_id);
+            firebase.database().ref().child('/news/' + news_id).remove();
+            alert("News Deleted.!");
+            ReloadPage();
+      }
+
+      function ReloadPage(){
+            window.location.reload();
+      }
+  
+  </script>
+
+</body>
+
+</html>
